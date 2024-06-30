@@ -1,0 +1,10 @@
+version: 2
+
+sources:
+  - name: landing
+    catalog: minio
+    schema: landing
+    tables:
+      - name: spotify_recommend_tracks_jrock
+      - name: spotify_recommend_tracks_jpop
+      - name: spotify_recommend_tracks_kpop

@@ -1,0 +1,130 @@
+version: '3.7'
+
+services:
+  minio:
+    image: minio/minio
+    container_name: minio
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin123
+    command: server /data --console-address ":9001"
+    volumes:
+      - minio-data:/data
+
+  minio-mc:
+    image: minio/mc:latest
+    container_name: minio-mc
+    depends_on:
+      - minio
+    entrypoint: |
+      sh -c "
+      sleep 10 &&
+      mc alias set myminio http://minio:9000 minioadmin minioadmin123 &&
+      mc mb myminio/landing &&
+      mc mb myminio/bronze &&
+      mc mb myminio/silver &&
+      mc mb myminio/gold
+      "
+
+  postgres-airflow:
+    image: postgres:13
+    container_name: postgres-airflow
+    environment:
+      POSTGRES_USER: airflow
+      POSTGRES_PASSWORD: airflow
+      POSTGRES_DB: airflow
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+  airflow:
+    build:
+      context: .
+      dockerfile: config_airflow/airflow.Dockerfile
+    container_name: airflow
+    depends_on:
+      - minio
+      - postgres-airflow
+    environment:
+      AIRFLOW__CORE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres-airflow/airflow
+      AIRFLOW__CORE__EXECUTOR: LocalExecutor
+      AIRFLOW__CORE__LOAD_EXAMPLES: 'false'
+      AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION: 'true'
+      AIRFLOW__CORE__PLUGINS_FOLDER: /opt/airflow/plugins
+      AIRFLOW__LOGGING__LOGGING_LEVEL: INFO
+      MINIO_ENDPOINT: http://minio:9000
+      MINIO_ACCESS_KEY: minioadmin
+      MINIO_SECRET_KEY: minioadmin123
+      SPOTIFY_CLIENT_ID: ${SPOTIFY_CLIENT_ID}
+      SPOTIFY_SECRET: ${SPOTIFY_SECRET}
+    command: ['airflow', 'standalone']
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./airflow/dags:/opt/airflow/dags
+
+  trino-coordinator:
+    container_name: trino
+    image: trinodb/trino:latest
+    hostname: trino-coordinator
+    environment:
+      - TRINO_ENVIRONMENT=production
+    ports:
+      - 8085:8080
+    depends_on:
+      - minio-mc
+    volumes:
+      - ./config_trino:/etc/trino
+
+  trino-worker:
+    image: trinodb/trino:latest
+    container_name: trino-worker
+    hostname: trino-worker
+    environment:
+      - TRINO_ENVIRONMENT=production
+      - TRINO_DISCOVERY_URI=http://trino-coordinator:8080
+    depends_on:
+      - trino-coordinator
+    volumes:
+      - ./config_trino:/etc/trino
+
+  trino-init:
+    image: trinodb/trino:latest
+    depends_on:
+      - trino-coordinator
+    entrypoint: [ "/bin/sh", "-c", "sleep 30 && trino --server trino-coordinator:8080 -f /docker-entrypoint-initdb.d/create_schemas.sql" ]
+    volumes:
+      - ./init_trino/create_schemas.sql:/docker-entrypoint-initdb.d/create_schemas.sql
+
+  mariadb:
+    container_name: mariadb
+    hostname: mariadb
+    image: mariadb:10.5.8
+    ports:
+      - 3307:3306
+    environment:
+      - MYSQL_ROOT_PASSWORD=admin
+      - MYSQL_USER=admin
+      - MYSQL_PASSWORD=admin
+      - MYSQL_DATABASE=metastore_db
+
+  hive-metastore:
+    container_name: hive-metastore
+    hostname: hive-metastore
+    image: 'bitsondatadev/hive-metastore:latest'
+    ports:
+      - 9083:9083 # Metastore Thrift
+    volumes:
+      - ./config_hive/metastore-site.xml:/opt/apache-hive-metastore-3.0.0-bin/conf/metastore-site.xml:ro
+    environment:
+      - METASTORE_DB_HOSTNAME=mariadb
+    depends_on:
+      - mariadb
+
+volumes:
+  minio-data:
+  postgres_data:

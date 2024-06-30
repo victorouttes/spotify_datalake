@@ -1,0 +1,12 @@
+dbt_project:
+  target: prod
+  outputs:
+    prod:
+      type: trino
+      threads: 4
+      host: trino-coordinator
+      port: 8080
+      user: admin
+      catalog: minio
+      schema: prod
+      connection_method: direct
