@@ -1,11 +1,11 @@
 # Spotify Datalake
 
-Este projeto tem como objetivo capturar dados de popularidade de músicas de 3 categorias (_J-Rock_, _J-Pop_ e _K-Pop_)
+Este projeto visa capturar dados de popularidade de músicas de 3 categorias (_J-Rock_, _J-Pop_ e _K-Pop_)
 do Spotify e disponibilizar em um dashboard para visualização. A ideia é que não fossem utilizadas bases de dados
 prontas da internet, então está é uma solução personalizada e adaptada ao nosso objetivo inicial. Por isto precisei
 lidar com alguns desafios inerentes a dados reais, que serão abordados no decorrer deste documento.
 
-Em resumo, a ideia é: 
+Em resumo, quero: 
 * Criar um data lake, seguindo a arquitetura _medallion_;
 * Utilizar o Trino como query engine para acessar os dados do data lake;
 * Coletar dados de popularidade das 3 categorias via API REST do Spotify;
@@ -18,7 +18,7 @@ Com isto definido, a arquitetura que iremos montar é a seguinte:
 ![architecture.png](images%2Farchitecture.png)
 
 Ela foi pensada para ser moderna, open source e poder ser executada via Docker, para possibilitar a todos 
-rodarem localmente, além de ser agnóstica à cloud.
+rodarem localmente, além de ser agnóstica à clouds.
 
 Principais ferramentas utilizadas no projeto:
 
@@ -28,7 +28,7 @@ Principais ferramentas utilizadas no projeto:
 * **Apache Superset**: ferramenta opensource de visualização de dados. 
 
 Normalmente não é função do engenheiro de dados chegar no nível do DataViz, mas o objetivo aqui é entregar a solução de
-ponta à ponta. 
+ponta a ponta. 
 
 # Construção do Projeto
 ## Acesso à API do Spotify
@@ -38,7 +38,7 @@ Com ela, você pode acessar uma ampla gama de dados e funcionalidades, desde inf
 faixas e playlists até a execução de músicas e a criação de novas playlists. 
 
 Para este projeto vamos utilizar o acesso aos endpoints que não necessitam de autorização do usuário-alvo, 
-como por exemplo ver as categorias de músicas existentes, ver detalhes de determinado artista, porém não ver 
+como, por exemplo, ver as categorias de músicas existentes, ver detalhes de determinado artista, porém não ver 
 playlists de determinado usuário, ok?
 
 Para utilizar a API, você precisa conseguir o _Client ID_ e o _Client Secret_. Para tal, você precisa 
@@ -56,7 +56,7 @@ SPOTIFY_SECRET = valor
 ```
 
 ## Criando Serviço do Minio (Object Storage)
-Agora vamos começar a criar os serviços que utilizaremos. Primeiro vamos criar o Minio. Crie um arquivo dentro da pasta
+Agora vamos começar a criar os serviços que utilizaremos. Primeiro vamos criar o _Minio_. Crie um arquivo dentro da pasta
 do nosso projeto chamado **docker-compose.yml**. Coloque:
 
 ```yaml
@@ -83,7 +83,7 @@ volumes:
 Isto vai subir o serviço do Minio na porta 9000 e estamos criando um volume persistente para os dados chamado _minio-data_.
 Executando um `docker-compose up -d` vai possibilitar seu acesso na url `http://localhost:9000/`, onde você pode colocar
 as credenciais definidas no nosso docker compose (minioadmin e minioadmin123). Você já pode sair criando buckets e 
-adicionando arquivos para ver como funciona, porém vamos automatizar algumas coisas aqui.
+adicionando arquivos para ver como funciona, porém, vamos automatizar algumas coisas aqui.
 
 No mesmo arquivo **docker-compose.yml**, atualize para ele ficar assim:
 
@@ -124,7 +124,7 @@ volumes:
 ```
 Perceba que adicionamos mais um serviço chamado _minio-mc_. Este serviço vai rodar (em seu entrypoint) alguns comandos
 para criar todos os nossos buckets (landing, bronze, silver e gold)! Perceba que todos os acessos entre os serviços
-daqui pra frente serão feitos através do nome do serviço mais a porta interna do serviço, por isto o 
+daqui para frente serão feitos através do nome do serviço mais a porta interna do serviço, por isto o 
 `mc alias set myminio http://minio:9000`. Você não precisa descobrir o IP interno de cada serviço para referenciá-lo.
 
 Agora, faça um `docker-compose down -v`, para derrubar os serviços e deletar os volumes e em seguida outro
@@ -134,7 +134,7 @@ existir os 4 buckets que precisamos!
 ![minio_create_buckets.png](images%2Fminio_create_buckets.png)
 
 ## Criando o Serviço do Airflow
-Agora adicionaremos em nosso **docker-compose.yml** mais 2 serviços para conseguirmos ter o Airflow. Não vá se perder
+Agora adicionaremos em nosso **docker-compose.yml** mais 2 serviços para conseguirmos ter o Airflow. Não vá se perder,
 pois vou colocando sempre o nosso **docker-compose.yml** completinho:
 
 ```yaml
@@ -251,7 +251,7 @@ SPOTIFY_SECRET: ${SPOTIFY_SECRET}
 ```
 
 Aqui, estamos inicializando o _Airflow_ no modo _standalone_, o que significa que não vamos precisar de diversos serviços
-acessórios como o _Celery_, _Worker_, etc. Porém, este modo de execução deve ser usado apenas para estudos.
+acessórios como o _Celery_, _Worker_, etc., porém este modo de execução deve ser usado apenas para estudos.
 
 Por fim, definimos este mapeamento de volume aqui:
 
@@ -276,7 +276,7 @@ meu_projeto/
 
 Se você fizer um `docker-compose up -d`, poderá acessar o _Airflow_ em `http://localhost:8080/`. No modo _standalone_,
 o usuário será sempre `admin` e a senha é gerada sempre que você iniciar o serviço pela primeira vez. Você pode ter
-acesso a senha dentro de um arquivo chamado `standalone_admin_password.txt` e você pode acessar seu conteúdo com:
+acesso à senha em um arquivo chamado `standalone_admin_password.txt` e você pode acessar seu conteúdo com:
 
 ```
 docker exec -it airflow cat standalone_admin_password.txt
@@ -323,7 +323,7 @@ Aqui implementamos uma classe que expõe o método `get_top_songs_recommendation
 recomendações de músicas do Spotify e estamos aplicando filtros de gênero musical, mercado (brasileiro) e valor mínimo de
 popularidade (uma métrica do Spotify que varia de 0 a 100 e quanto maior, mais popular).
 
-O segundo arquivo serve para facilitar a criação de arquivos em nosso data lake (o Minio):
+O segundo arquivo facilita a criação de arquivos em nosso data lake (o _Minio_):
 
 ```python
 import json
@@ -359,10 +359,10 @@ class Storage:
         logging.log(level=logging.INFO, msg='Success!')
 ```
 Temos mais uma classe, onde o método mais importante aqui é o `save_top_songs_recommendation_to_bucket()`, que recebe
-o json original vindo da API REST do _Spotify_ e é salvo no data lake. O JSON vindo da API é um tanto complexo, mas veremos
+o json original vindo da API REST do _Spotify_ e o salva no data lake. O JSON vindo da API é um tanto complexo, mas veremos
 mais sobre isto quando precisarmos acessá-lo via o nosso _query engine_.
 
-Agora sim podemos escrever o código em nossa DAG:
+Agora sim, podemos escrever o código em nossa DAG:
 
 ```python
 from datetime import timedelta
@@ -419,7 +419,7 @@ with DAG(
 Aqui criamos um _TaskGroup_ para a ingestão de dados, com 3 _tasks_, uma para cada gênero (_J-Rock_, _J-Pop_ e _K-Pop_).
 Também passamos o path no nosso data lake onde queremos salvar os dados que serão coletados. Cada task é criada usando o
 básico _PythonOperator_, chamando a função `ingestion()`, que por sua vez chama as 2 classes que acabamos de criar,
-para acessar o Spotify e obter os dados e a outra para salvar os dados em formato JSON no Minio.
+para acessar o Spotify e obter os dados e a outra para salvar os dados em formato JSON no _Minio_.
 
 Se olharmos em nosso Airflow agora e mandarmos executar a DAG, deveremos ter algo assim:
 
@@ -446,7 +446,7 @@ meu_projeto/
 ```
 
 ## Criando o Serviço do Trino
-Precisamos acessar os dados do nosso data lake e pra isto usaremos o _Trino_. Vamos precisar de muitos
+Precisamos acessar os dados do nosso data lake e para isto usaremos o _Trino_. Vamos precisar de muitos
 serviços agora, vamos começar com o básico. Adicione estes serviços no nosso **docker-compose.yml**:
 
 ```yaml
@@ -747,7 +747,7 @@ terá tudo criado automáticamente. Seu _Minio_ terá os buckets criados e o Tri
 
 ![trino_dbeaver.png](images%2Ftrino_dbeaver.png)
 
-Ah, aqui estou usando o _DBeaber_ para acessar o _Trino_. Você pode configurá-lo assim:
+Ah, aqui estou usando o _Dbeaver_ para acessar o _Trino_. Você pode configurá-lo assim:
 
 ![trino_config_dbeaver.png](images%2Ftrino_config_dbeaver.png)
 
@@ -755,13 +755,13 @@ Não precisa de senha! Atenção na porta, que é 8085 (se você seguiu todo o t
 
 ## Modificando a DAG de Ingestão
 Até aqui nós temos um serviço de object storage funcionando, o query engine funcionando e nosso orquestrador de pipelines
-funcionando e gerando arquivos dentro do data lake. Porém, pra cada tabela criada no data lake, nós precisamos
+funcionando e gerando arquivos dentro do data lake. Porém, para cada tabela criada no data lake, nós precisamos
 indicar ao _Trino_ onde estão estes arquivos e qual a estrutura deles (colunas e tipos de dado). Isto é feito atráves da
 criação de tabelas no _Trino_. Os metadados dessas tabelas serão armazenados no nosso serviço _Hive_. Ou seja, por mais
 que tenhamos escrito arquivos (JSON) no nosso data lake (_Minio_), eles ainda não serão visíveis no _Trino_ até que façamos
 a criação das tabelas lá.
 
-Então vamos ajustar nossa DAG de ingestão de dados pra fazer isto. Na verdade precisamos ajustar o arquivo `airflow/dags/util/storage.py`:
+Então vamos ajustar nossa DAG de ingestão de dados para fazer isto. Na verdade, precisamos ajustar o arquivo `airflow/dags/util/storage.py`:
 
 ```python
 import json
@@ -900,7 +900,7 @@ class Storage:
         cursor.close()
         logging.log(level=logging.INFO, msg='Success!')
 ```
-A primeira mudança é informar as credencias de acesso ao _Trino_. Fazemos isso em:
+A primeira mudança é informar as credenciais de acesso ao _Trino_. Fazemos isso em:
 ```python
 self.trino_host = 'trino-coordinator'
 self.trino_port = 8080
@@ -932,3 +932,351 @@ no _Trino_. Assim você vai conseguir ver as tabelas ingeridas em _landing_:
 E poderá acessar esses dados assim:
 
 ![trino_query_landing.png](images%2Ftrino_query_landing.png)
+
+## Transformações nos Dados com DBT
+O DBT (_Data Build Tool_) é uma poderosa ferramenta para fazer transformação nos dados do seu data lake ou _datawarehouse_.
+Neste tutorial não vou entrar em detalhes sobre a ferramenta, vou assumir que você já conhece o básico e sabe criar e configurar
+um projeto.
+
+Vamos criar nosso projeto DBT dentro da pasta `airflow/dags/`, por comodidade na hora do acesso futuro via _Airflow_.
+Vamos usar o plugin `dbt-trino` para acessar o _Trino_ e você já deve estar com tudo instalado, pois está no **requirements.txt**.
+
+Agora precisamos configurar algumas coisas no DBT. Aqui, chamei o projeto de `dbt_project`. Crie um arquivo `profiles.yml`
+na raíz do projeto DBT com o conteúdo:
+
+```yaml
+dbt_project:
+  target: prod
+  outputs:
+    prod:
+      type: trino
+      threads: 4
+      host: trino-coordinator
+      port: 8080
+      user: admin
+      catalog: minio
+      schema: prod
+      connection_method: direct
+```
+Aqui vai servir pra o DBT conseguir se conectar com o Trino para poder escrever novas tabelas lá, via SQL. Importante notar
+a porta utilizada, que é a 8080. Esta é a porta interna do nosso container, não a porta externa (8085), que usamos para acessar
+pelo DBeaver.
+
+No arquivo `dbt_project.yml`, deixe a seção **models** desta forma:
+```yaml
+models:
+  dbt_project:
+    01_bronze:
+      materialized: table
+      +schema: bronze
+    02_silver:
+      materialized: table
+      +schema: silver
+    03_gold:
+      materialized: table
+      +schema: gold
+```
+
+Agora, vamos começar a criar nossos modelos de transformação! Dentro da pasta models você vai criar as 3 pastas:
+* 01_bronze
+* 02_silver
+* 03_gold
+
+e o arquivo `sources.yml`. Este yml deve conter o mapeamento da nossa fonte de dados pro DBT, que será nossa camada
+_landing_:
+
+```yaml
+version: 2
+
+sources:
+  - name: landing
+    catalog: minio
+    schema: landing
+    tables:
+      - name: spotify_recommend_tracks_jrock
+      - name: spotify_recommend_tracks_jpop
+      - name: spotify_recommend_tracks_kpop
+```
+
+Dentro de cada pasta que criamos, você poderá fazer a transformação que quiser para levar os dados de _landing_ para _bronze_,
+de _bronze_ para _silver_ e de _silver_ para _gold_.
+
+A query para levar os dados de _landing_ para _bronze_ vai ser a mais complexa, visto a natureza do dado ser JSON. Aqui vai um
+exemplo de transformação de uma das tabelas de _landing_ para _bronze_:
+```
+{{config(
+    alias='spotify_recommendations_jpop',
+    table_type='iceberg'
+)}}
+
+select
+	track.id as song_id,
+	track.name as song_name,
+	track.popularity as song_popularity,
+	track.album.name as album_name,
+	track.album.album_type as album_type,
+	artist.name as artist_name,
+	track.href as spotify_link,
+	track.album.images[1].url as album_image
+from {{ source('landing', 'spotify_recommend_tracks_jpop') }}
+cross join unnest(tracks) as track
+cross join unnest(track.album.artists) as artist
+```
+
+Estamos utilizando o tipo de armazenamento físico do dado (no Minio) como _iceberg_ e a consulta num JSON com listas precisa
+ser feito com a ajuda de um `cross join unnest`. O resultado dessa consulta especificamente é (você pode rodar no Dbeaver,
+apenas trocando o `{{ source('landing', 'spotify_recommend_tracks_jpop') }}` pelo nome real da tabela):
+
+![trino_query_landing_testes.png](images%2Ftrino_query_landing_testes.png)
+
+Você deve criar os modelos para as 3 tabelas de _landing_.
+
+Na pasta dos modelos de silver, eu resolvi criar um único modelo, com o union das 3 tabelas de bronze:
+
+```
+{{config(
+    alias='spotify_recommendations',
+    table_type='iceberg'
+)}}
+
+select
+	*,
+	'J-Rock' as genre
+from {{ ref('bronze_spotify_recommendations_jrock') }}
+union all
+select
+	*,
+	'J-Pop' as genre
+from {{ ref('bronze_spotify_recommendations_jpop') }}
+union all
+select
+	*,
+	'K-Pop' as genre
+from {{ ref('bronze_spotify_recommendations_kpop') }}
+```
+
+Já em gold, eu criei 5 modelos, um pra cada indicador/chart que eu queria criar. Eu também criei testes de
+qualidade para todos os modelos, em todas as camadas. Como, por exemplo, o arquivo `airflow/dags/dbt_project/models/02_silver/silver_spotify_recommendations.yml`:
+
+```yaml
+version: 2
+
+models:
+  - name: silver_spotify_recommendations
+    columns:
+    - name: song_id
+      data_tests:
+        - not_null
+    - name: song_name
+      data_tests:
+        - not_null
+    - name: song_popularity
+      data_tests:
+        - not_null
+        - dbt_utils.accepted_range:
+            min_value: 0
+            max_value: 100
+    - name: genre
+      data_tests:
+        - not_null
+        - accepted_values:
+            values: ['J-Rock', 'J-Pop', 'K-Pop']
+
+```
+Você pode rodar fora do container o projeto DBT, mas precisa trocar (no `profiles.yml`) o `host`para `localhost`
+e a `port` para `8085`. Fazendo isso e rodando um `dbt deps && dbt build --profiles-dir .` você terá o seguinte efeito no
+_Trino_:
+
+![trino_completo.png](images%2Ftrino_completo.png)
+
+Os arquivos dos modelos podem ser vistos neste projeto, em seus respectivos diretórios. Você pode criar outros também,
+para estudar.
+
+## Ajustando a DAG para Executar o DBT
+Até aqui nós já geramos todas as tabelas necessárias no nosso data lake e já temos o ambiente de _gold_ populado e pronto
+para o analista construir os dashboards. Porém, nós executamos o DBT manualmente e agora vamos fazer um pequeno ajuste na 
+nossa DAG do _Airflow_ para conseguir rodar o DBT automaticamente durante o pipeline de dados.
+
+Adicione o seguinte TaskGroup na nossa dag `dag_spotify.py`:
+
+```python
+from datetime import timedelta
+
+from airflow import DAG
+from airflow.operators.bash import BashOperator
+from airflow.operators.python import PythonOperator
+from airflow.utils.dates import days_ago
+from airflow.utils.task_group import TaskGroup
+
+from util.spotify import SpotifyAPI
+from util.storage import Storage
+
+default_args = {
+    'owner': 'airflow',
+    'depends_on_past': False,
+    'email': ['airflow@example.com'],
+    'email_on_failure': False,
+    'email_on_retry': False,
+    'retries': 1,
+    'retry_delay': timedelta(minutes=5)
+}
+
+with DAG(
+    'dag_spotify',
+    default_args=default_args,
+    description='Spotify data lake',
+    schedule_interval=timedelta(days=1),
+    start_date=days_ago(1),
+    tags=['spotify', 'landing'],
+) as dag:
+    with TaskGroup(group_id='spotify_ingestion') as spotify_ingestion:
+        def ingestion(genre: str, s3_path: str):
+            api = SpotifyAPI()
+            json_data = api.get_top_songs_recommendation(genre=genre)
+            storage = Storage()
+            storage.save_top_songs_recommendation_to_bucket(data=json_data, path=s3_path)
+
+        PythonOperator(
+            task_id='spotify_jrock_ingestion',
+            python_callable=ingestion,
+            op_kwargs={'genre': 'j-rock', 's3_path': 's3a://landing/spotify_recommend_tracks_jrock/'},
+        )
+        PythonOperator(
+            task_id='spotify_jpop_ingestion',
+            python_callable=ingestion,
+            op_kwargs={'genre': 'j-pop', 's3_path': 's3a://landing/spotify_recommend_tracks_jpop/'},
+        )
+        PythonOperator(
+            task_id='spotify_kpop_ingestion',
+            python_callable=ingestion,
+            op_kwargs={'genre': 'k-pop', 's3_path': 's3a://landing/spotify_recommend_tracks_kpop/'},
+        )
+
+    with TaskGroup(group_id='spotify_transformation') as spotify_transformation:
+        dbt_build = BashOperator(
+            task_id='dbt_build',
+            bash_command='cd /opt/airflow/dags/dbt_project && dbt deps && dbt build --profiles-dir .',
+        )
+
+    spotify_ingestion >> spotify_transformation
+```
+Via `BashOperator` nós entramos na pasta do projeto DBT e executamos os mesmos comandos que fizemos manualmente. Aqui,
+sugiro que você inicie uma execução nova de todo o projeto com `docker-compose down -v` e `docker-compose up -d` e 
+rode a DAG que acabamos de modificar. 
+
+![airflow_dag_completa.png](images%2Fairflow_dag_completa.png)
+
+## Criando o Serviço Apache Superset
+Estamos com toda a parte de engenharia pronta! A cereja do bolo vai ser criar o serviço para o Superset e fazer um
+dashboard bem simples para mostrar como acessamos os dados do data lake.
+
+Vamos precisar adicionar mais 3 serviços para utilizar o Superset:
+```yaml
+  redis:
+    image: redis:latest
+    container_name: redis
+    ports:
+      - 6379:6379
+
+  superset-db:
+    image: postgres:13
+    container_name: superset-db
+    environment:
+      POSTGRES_USER: superset
+      POSTGRES_PASSWORD: superset
+      POSTGRES_DB: superset
+    volumes:
+      - superset-db-data:/var/lib/postgresql/data
+
+  superset:
+    build:
+      context: .
+      dockerfile: ./config_superset/superset.Dockerfile
+    container_name: superset
+    environment:
+      SUPERSET_CONFIG_PATH: /app/pythonpath/superset_config.py
+      PYTHONPATH: /app/pythonpath
+      POSTGRES_USER: superset
+      POSTGRES_PASSWORD: superset
+      POSTGRES_DB: superset
+      POSTGRES_HOST: superset-db
+    volumes:
+      - ./config_superset:/app/pythonpath
+      - superset-data:/app/superset_home
+    ports:
+      - 8088:8088
+    depends_on:
+      - redis
+      - superset-db
+    entrypoint:
+      - sh
+      - -c
+      - |
+        superset fab create-admin --username admin --firstname Superset --lastname Admin --email admin@superset.com --password admin && \
+        superset db upgrade && \
+        superset init && \
+        superset run --host 0.0.0.0 -p 8088 --with-threads --reload
+```
+O _Superset_ precisa do _Redis_ para cache e de um banco para os metadados, onde escolhi o _Postgres_. Novamente, estou usando
+uma imagem personalizada, então você deve criar o arquivo (e a pasta): `config_superset/superset.Dockerfile` contendo:
+```dockerfile
+FROM apache/superset:latest
+
+USER root
+RUN pip install sqlalchemy-trino
+
+USER superset
+```
+
+Apenas para instalar o suporte ao _Trino_. Personalizei o _entrypoint_ para poder criar o primeiro usuário automaticamente. 
+Também mapeei a pasta `config_superset` para uma pasta interna no _container_, para poder disponibilizar no _Superset_ 
+o arquivo `superset_config.py` contendo:
+
+```python
+# Celery configuration
+class CeleryConfig(object):
+    broker_url = 'redis://redis:6379/0'
+    result_backend = 'redis://redis:6379/0'
+    worker_log_server = False
+
+
+CELERY_CONFIG = CeleryConfig
+
+SQLALCHEMY_TRACK_MODIFICATIONS = False
+
+# Superset metadata database configuration
+SQLALCHEMY_DATABASE_URI = 'postgresql+psycopg2://superset:superset@superset-db:5432/superset'
+
+# Additional configurations for Superset
+SECRET_KEY = 'ahyeha9182aNah98A'
+CSRF_ENABLED = True
+
+# Configuration to support large queries and dashboards
+SQLLAB_TIMEOUT = 300
+SUPERSET_WEBSERVER_TIMEOUT = 300
+
+CACHE_CONFIG = {
+    'CACHE_TYPE': 'RedisCache',
+    'CACHE_DEFAULT_TIMEOUT': 300,
+    'CACHE_KEY_PREFIX': 'superset_',
+    'CACHE_REDIS_HOST': 'redis',
+    'CACHE_REDIS_PORT': 6379,
+    'CACHE_REDIS_DB': 1,
+    'CACHE_REDIS_URL': 'redis://redis:6379/1'
+}
+```
+Este arquivo vai ser carregado na inicialização do _Superset_ e deixar tudo configurado. Após a inicialização, você poderá
+se autenticar com `admin` como login e senha:
+
+![superset_login.png](images%2Fsuperset_login.png)
+
+Lá, você poderá configurar a conexão com o _Trino_:
+
+![superset_trino.png](images%2Fsuperset_trino.png)
+
+E poderá criar seus dashboards! Aqui um exemplo simples que fiz para demonstrar, acessando
+apenas as tabelas no _schema_ _gold_:
+
+![superset.jpg](images%2Fsuperset.jpg)
+
+Se você gostou deste conteúdo, compartilhe e favorite o repositório! Obrigado!

@@ -7,7 +7,6 @@ class CeleryConfig(object):
 
 CELERY_CONFIG = CeleryConfig
 
-# Optional: Enable SQLALCHEMY_TRACK_MODIFICATIONS if needed
 SQLALCHEMY_TRACK_MODIFICATIONS = False
 
 # Superset metadata database configuration
@@ -21,7 +20,6 @@ CSRF_ENABLED = True
 SQLLAB_TIMEOUT = 300
 SUPERSET_WEBSERVER_TIMEOUT = 300
 
-# Example cache configurations
 CACHE_CONFIG = {
     'CACHE_TYPE': 'RedisCache',
     'CACHE_DEFAULT_TIMEOUT': 300,
