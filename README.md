@@ -23,6 +23,7 @@ rodarem localmente, além de ser agnóstica à clouds.
 Principais ferramentas utilizadas no projeto:
 
 * **Apache Airflow**: poderosa e conhecida ferramenta de orquestração de pipelines de dados;
+* **DBT**: poderosa ferramenta de transformação e testes de dados;
 * **Minio**: ferramenta para _object storage_ gratuita e que utiliza o mesmo protocolo (e bibliotecas!) do AWS S3;
 * **Trino**: ferramenta de _query engine_. Possibilita acessar diversas fontes de dados como bancos transacionais, nosql ou mesmo arquivos parquet/csv/json e fazer consultas padrão SQL em cima dessas fontes. Permite inclusive cruzar dados de diferentes fontes de forma transparente;
 * **Apache Superset**: ferramenta opensource de visualização de dados. 
