@@ -1,0 +1,14 @@
+version: 2
+
+models:
+  - name: gold_popularity_by_artist
+    columns:
+    - name: artist_name
+      data_tests:
+        - not_null
+    - name: popularity_avg
+      data_tests:
+        - not_null
+        - dbt_utils.accepted_range:
+            min_value: 0
+            max_value: 100

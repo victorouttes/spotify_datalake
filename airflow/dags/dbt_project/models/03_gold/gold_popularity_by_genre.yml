@@ -1,0 +1,16 @@
+version: 2
+
+models:
+  - name: gold_popularity_by_genre
+    columns:
+    - name: popularity_avg
+      data_tests:
+        - not_null
+        - dbt_utils.accepted_range:
+            min_value: 0
+            max_value: 100
+    - name: genre
+      data_tests:
+        - not_null
+        - accepted_values:
+            values: ['J-Rock', 'J-Pop', 'K-Pop']
